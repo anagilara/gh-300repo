@@ -17,8 +17,17 @@ class ProductionConfig(Config):
     """Configuración de producción"""
     DEBUG = False
 
+
+class TestingConfig(Config):
+    """Configuración de pruebas"""
+    TESTING = True
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URL', 'sqlite:///test_productos.db')
+    WTF_CSRF_ENABLED = False
+
 config = {
     'development': DevelopmentConfig,
+    'testing': TestingConfig,
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
