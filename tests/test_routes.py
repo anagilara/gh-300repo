@@ -1,4 +1,4 @@
-from models import Producto, db
+from models import Cliente, Producto, db
 
 
 def test_index_muestra_estado_vacio(client):
@@ -6,6 +6,15 @@ def test_index_muestra_estado_vacio(client):
 
     assert response.status_code == 200
     assert 'No hay productos registrados' in response.get_data(as_text=True)
+
+
+def test_menu_permite_navegar_entre_productos_y_clientes(client):
+    response = client.get('/')
+
+    body = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'Productos' in body
+    assert 'Clientes' in body
 
 
 def test_nuevo_producto_crea_registro_y_muestra_flash(client, app):
@@ -162,6 +171,162 @@ def test_index_paginaa_resultados(client, app):
     assert 'Producto 0' in body
     assert 'Producto 9' in body
     assert 'Producto 10' not in body
+
+
+def test_clientes_muestra_estado_vacio(client):
+    response = client.get('/clientes')
+
+    assert response.status_code == 200
+    assert 'No hay clientes registrados' in response.get_data(as_text=True)
+
+
+def test_nuevo_cliente_crea_registro_y_muestra_flash(client, app):
+    response = client.post(
+        '/cliente/nuevo',
+        data={
+            'nombre': 'Ana Pérez',
+            'email': 'ana@example.com',
+            'telefono': '555-0101',
+            'direccion': 'Calle 123',
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert 'creado exitosamente' in response.get_data(as_text=True)
+
+    with app.app_context():
+        cliente = Cliente.query.filter_by(email='ana@example.com').one()
+        assert cliente.nombre == 'Ana Pérez'
+        assert cliente.telefono == '555-0101'
+        assert cliente.direccion == 'Calle 123'
+
+
+def test_nuevo_cliente_rechaza_correo_duplicado_insensible(client, make_client, app):
+    make_client(email='ana@example.com')
+
+    response = client.post(
+        '/cliente/nuevo',
+        data={
+            'nombre': 'Ana Dos',
+            'email': 'ANA@EXAMPLE.COM',
+            'telefono': '555-0199',
+            'direccion': 'Otra calle',
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert 'ya existe en el sistema' in response.get_data(as_text=True)
+
+    with app.app_context():
+        assert Cliente.query.count() == 1
+
+
+def test_nuevo_cliente_rechaza_datos_invalidos(client):
+    response = client.post(
+        '/cliente/nuevo',
+        data={
+            'nombre': '',
+            'email': 'correo-invalido',
+            'telefono': '',
+            'direccion': '',
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert 'Por favor completa los campos requeridos correctamente' in response.get_data(as_text=True)
+
+
+def test_editar_cliente_actualiza_datos(client, make_client, app):
+    cliente = make_client(nombre='Ana', email='ana@example.com')
+
+    response = client.post(
+        f'/cliente/{cliente.id}/editar',
+        data={
+            'nombre': 'Ana Gómez',
+            'email': 'ana.gomez@example.com',
+            'telefono': '555-0202',
+            'direccion': 'Nueva dirección',
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert 'actualizado exitosamente' in response.get_data(as_text=True)
+
+    with app.app_context():
+        actualizado = db.session.get(Cliente, cliente.id)
+        assert actualizado.nombre == 'Ana Gómez'
+        assert actualizado.email == 'ana.gomez@example.com'
+        assert actualizado.telefono == '555-0202'
+        assert actualizado.direccion == 'Nueva dirección'
+
+
+def test_editar_cliente_rechaza_correo_duplicado(client, make_client, app):
+    cliente = make_client(nombre='Ana', email='ana@example.com')
+    make_client(nombre='Beto', email='beto@example.com')
+
+    response = client.post(
+        f'/cliente/{cliente.id}/editar',
+        data={
+            'nombre': 'Ana',
+            'email': 'BETO@EXAMPLE.COM',
+            'telefono': '555-0101',
+            'direccion': 'Dirección base',
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert 'ya está siendo usado por otro cliente' in response.get_data(as_text=True)
+
+    with app.app_context():
+        original = db.session.get(Cliente, cliente.id)
+        assert original.email == 'ana@example.com'
+
+
+def test_ver_cliente_muestra_detalle(client, make_client):
+    cliente = make_client(nombre='Ana', email='ana@example.com')
+
+    response = client.get(f'/cliente/{cliente.id}')
+
+    assert response.status_code == 200
+    assert 'Ana' in response.get_data(as_text=True)
+    assert 'ana@example.com' in response.get_data(as_text=True)
+
+
+def test_eliminar_cliente_borra_registro(client, make_client, app):
+    cliente = make_client(nombre='Ana', email='ana@example.com')
+
+    response = client.post(f'/cliente/{cliente.id}/eliminar', follow_redirects=True)
+
+    assert response.status_code == 200
+    assert 'eliminado exitosamente' in response.get_data(as_text=True)
+
+    with app.app_context():
+        assert db.session.get(Cliente, cliente.id) is None
+
+
+def test_clientes_paginaa_resultados(client, app):
+    with app.app_context():
+        for indice in range(12):
+            db.session.add(
+                Cliente(
+                    nombre=f'Cliente {indice}',
+                    email=f'cliente{indice}@example.com',
+                )
+            )
+        db.session.commit()
+
+    response = client.get('/clientes')
+
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    assert 'Cliente 0' in body
+    assert 'Cliente 9' in body
+    assert 'Cliente 10' not in body
 
 
 def test_api_productos_devuelve_lista_json(client, make_product):

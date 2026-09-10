@@ -9,7 +9,7 @@ import pytest
 
 from app import create_app
 from config import TestingConfig
-from models import Producto, db
+from models import Cliente, Producto, db
 
 
 @pytest.fixture()
@@ -51,3 +51,22 @@ def make_product(app):
         return producto
 
     return _make_product
+
+
+@pytest.fixture()
+def make_client(app):
+    def _make_client(**overrides):
+        data = {
+            'nombre': 'Cliente base',
+            'email': 'cliente@example.com',
+            'telefono': '555-0101',
+            'direccion': 'Dirección base',
+        }
+        data.update(overrides)
+
+        cliente = Cliente(**data)
+        db.session.add(cliente)
+        db.session.commit()
+        return cliente
+
+    return _make_client

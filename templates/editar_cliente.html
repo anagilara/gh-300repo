@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Cliente - Administrador{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>✏️ Editar Cliente</h1>
+
+        <form method="POST" class="mt-4" novalidate>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Cliente *</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ cliente.nombre }}" required>
+                <small class="form-text text-muted">Campo obligatorio</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico *</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ cliente.email }}" required>
+                <small class="form-text text-muted">Campo obligatorio</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono" class="form-label">Teléfono</label>
+                <input type="text" class="form-control" id="telefono" name="telefono" value="{{ cliente.telefono or '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="direccion" class="form-label">Dirección</label>
+                <textarea class="form-control" id="direccion" name="direccion" rows="4">{{ cliente.direccion or '' }}</textarea>
+            </div>
+
+            <div class="alert alert-info">
+                <small>
+                    <strong>Información:</strong><br>
+                    Creado: {{ cliente.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}<br>
+                    Última actualización: {{ cliente.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') }}
+                </small>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    💾 Guardar Cambios
+                </button>
+                <a href="{{ url_for('ver_cliente', id=cliente.id) }}" class="btn btn-secondary btn-lg">
+                    ❌ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

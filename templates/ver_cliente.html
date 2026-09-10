@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cliente.nombre }} - Administrador{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h2 class="mb-0">{{ cliente.nombre }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="text-muted">Información General</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>ID:</strong></td>
+                                <td>{{ cliente.id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Correo:</strong></td>
+                                <td>{{ cliente.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado:</strong></td>
+                                <td>
+                                    {% if cliente.activo %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-muted">Contacto</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Teléfono:</strong></td>
+                                <td>
+                                    {% if cliente.telefono %}
+                                        {{ cliente.telefono }}
+                                    {% else %}
+                                        <span class="text-muted">No registrado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dirección:</strong></td>
+                                <td>
+                                    {% if cliente.direccion %}
+                                        {{ cliente.direccion }}
+                                    {% else %}
+                                        <span class="text-muted">No registrada</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary">
+                    <small>
+                        <strong>Timestamps:</strong><br>
+                        Creado: {{ cliente.fecha_creacion.strftime('%d/%m/%Y %H:%M:%S') }}<br>
+                        Última actualización: {{ cliente.fecha_actualizacion.strftime('%d/%m/%Y %H:%M:%S') }}
+                    </small>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-warning btn-lg">
+                        ✏️ Editar
+                    </a>
+                    <a href="{{ url_for('clientes') }}" class="btn btn-secondary btn-lg">
+                        ← Volver
+                    </a>
+                    <form method="POST" action="{{ url_for('eliminar_cliente', id=cliente.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('¿Estás seguro de eliminar este cliente?')">
+                            🗑️ Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

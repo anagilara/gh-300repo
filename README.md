@@ -1,16 +1,17 @@
-# 🛍️ Administrador de Productos v1
+# 🗂️ Administrador de Inventario y Clientes v1
 
-Una aplicación web moderna para gestionar productos, construida con Flask y SQLAlchemy.
+Una aplicación web moderna para gestionar productos y clientes, construida con Flask y SQLAlchemy.
 
 ## ✨ Características
 
-- **CRUD Completo**: Crear, leer, actualizar y eliminar productos
+- **CRUD Completo**: Crear, leer, actualizar y eliminar productos y clientes
 - **Interfaz Amigable**: Diseño responsivo con Bootstrap 5
 - **Base de Datos**: SQLite integrada con SQLAlchemy ORM
 - **API REST**: Endpoints JSON para integración con otras aplicaciones
 - **Búsqueda**: Buscar productos por nombre y categoría
 - **Paginación**: Gestión eficiente de grandes catálogos
 - **Validación**: Validación de datos en formularios
+- **Navegación**: Menú para alternar entre administración de productos y clientes
 
 ## 📋 Requisitos
 
@@ -70,6 +71,10 @@ Accede a `http://localhost:5000` en tu navegador para:
 - **Editar Producto**: Modifica información existente
 - **Eliminar Producto**: Elimina productos no deseados
 - **Ver Detalles**: Información completa de cada producto
+- **Ver Clientes**: Lista completa con paginación
+- **Crear Cliente**: Agrega clientes con su información de contacto
+- **Editar Cliente**: Modifica la información existente
+- **Eliminar Cliente**: Elimina clientes no deseados
 
 ### API REST
 
@@ -103,9 +108,13 @@ curl "http://localhost:5000/api/productos/buscar?q=laptop&categoria=Electrónica
 ├── templates/               # Plantillas HTML
 │   ├── base.html           # Template base
 │   ├── index.html          # Lista de productos
+│   ├── clientes.html       # Lista de clientes
 │   ├── nuevo_producto.html # Crear producto
 │   ├── editar_producto.html # Editar producto
 │   ├── ver_producto.html   # Detalles del producto
+│   ├── nuevo_cliente.html  # Crear cliente
+│   ├── editar_cliente.html # Editar cliente
+│   ├── ver_cliente.html    # Detalles del cliente
 │   ├── 404.html            # Página no encontrada
 │   └── 500.html            # Error del servidor
 ├── static/                  # Archivos estáticos
@@ -125,6 +134,19 @@ curl "http://localhost:5000/api/productos/buscar?q=laptop&categoria=Electrónica
 | precio | Float | Precio del producto |
 | cantidad | Integer | Cantidad en stock |
 | categoria | String | Categoría del producto |
+| fecha_creacion | DateTime | Fecha de creación |
+| fecha_actualizacion | DateTime | Última actualización |
+| activo | Boolean | Estado activo/inactivo |
+
+### Tabla: Clientes
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | Integer (PK) | Identificador único |
+| nombre | String | Nombre del cliente |
+| email | String | Correo electrónico único |
+| telefono | String | Teléfono de contacto |
+| direccion | Text | Dirección del cliente |
 | fecha_creacion | DateTime | Fecha de creación |
 | fecha_actualizacion | DateTime | Última actualización |
 | activo | Boolean | Estado activo/inactivo |
