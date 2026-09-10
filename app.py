@@ -22,7 +22,7 @@ def create_app(config_name='development'):
         """Página principal - lista de productos"""
         page = request.args.get('page', 1, type=int)
         productos = Producto.query.paginate(page=page, per_page=10)
-        return render_template('index.html', )
+        return render_template('index.html', productos=productos)
 
     def obtener_producto_o_404(id):
         """Obtener un producto por ID o devolver 404 si no existe"""
