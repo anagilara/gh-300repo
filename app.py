@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from models import db, Producto
+from models import db, Producto, Cliente
 from config import config
 import os
 
@@ -24,9 +24,25 @@ def create_app(config_name='development'):
         productos = Producto.query.paginate(page=page, per_page=10)
         return render_template('index.html', productos=productos)
 
+    @app.route('/clientes')
+    def clientes():
+        """Página principal de clientes"""
+        page = request.args.get('page', 1, type=int)
+        clientes = Cliente.query.paginate(page=page, per_page=10)
+        return render_template('clientes.html', clientes=clientes)
+
     def obtener_producto_o_404(id):
         """Obtener un producto por ID o devolver 404 si no existe"""
         return Producto.query.get_or_404(id)
+
+    def obtener_cliente_o_404(id):
+        """Obtener un cliente por ID o devolver 404 si no existe"""
+        return Cliente.query.get_or_404(id)
+
+    def email_cliente_es_valido(email):
+        """Validación básica para email de cliente"""
+        partes = email.split('@')
+        return len(partes) == 2 and all(partes) and '.' in partes[1]
 
     @app.route('/producto/nuevo', methods=['GET', 'POST'])
     def nuevo_producto():
@@ -145,6 +161,111 @@ def create_app(config_name='development'):
 
         return redirect(url_for('index'))
 
+    @app.route('/cliente/nuevo', methods=['GET', 'POST'])
+    def nuevo_cliente():
+        """Crear un nuevo cliente"""
+        if request.method == 'POST':
+            try:
+                nombre = request.form.get('nombre', '').strip()
+                email = request.form.get('email', '').strip()
+                telefono = request.form.get('telefono', '').strip()
+                direccion = request.form.get('direccion', '').strip()
+
+                if not nombre or not email or not email_cliente_es_valido(email):
+                    flash('Por favor completa los campos requeridos correctamente', 'error')
+                    return redirect(url_for('nuevo_cliente'))
+
+                cliente_existente = Cliente.query.filter(
+                    Cliente.email.ilike(email)
+                ).first()
+
+                if cliente_existente:
+                    flash(f'El correo "{email}" ya existe en el sistema', 'error')
+                    return redirect(url_for('nuevo_cliente'))
+
+                cliente = Cliente(
+                    nombre=nombre,
+                    email=email,
+                    telefono=telefono,
+                    direccion=direccion
+                )
+
+                db.session.add(cliente)
+                db.session.commit()
+
+                flash(f'Cliente "{nombre}" creado exitosamente', 'success')
+                return redirect(url_for('clientes'))
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error al crear el cliente: {str(e)}', 'error')
+                return redirect(url_for('nuevo_cliente'))
+
+        return render_template('nuevo_cliente.html')
+
+    @app.route('/cliente/<int:id>/editar', methods=['GET', 'POST'])
+    def editar_cliente(id):
+        """Editar un cliente existente"""
+        cliente = obtener_cliente_o_404(id)
+
+        if request.method == 'POST':
+            try:
+                nombre = request.form.get('nombre', '').strip()
+                email_nuevo = request.form.get('email', '').strip()
+                telefono = request.form.get('telefono', '').strip()
+                direccion = request.form.get('direccion', '').strip()
+
+                if not nombre or not email_nuevo or not email_cliente_es_valido(email_nuevo):
+                    flash('Por favor completa los campos requeridos correctamente', 'error')
+                    return redirect(url_for('editar_cliente', id=id))
+
+                if email_nuevo.lower() != cliente.email.lower():
+                    cliente_duplicado = Cliente.query.filter(
+                        Cliente.email.ilike(email_nuevo)
+                    ).first()
+
+                    if cliente_duplicado:
+                        flash(f'El correo "{email_nuevo}" ya está siendo usado por otro cliente', 'error')
+                        return redirect(url_for('editar_cliente', id=id))
+
+                cliente.nombre = nombre
+                cliente.email = email_nuevo
+                cliente.telefono = telefono
+                cliente.direccion = direccion
+
+                db.session.commit()
+                flash(f'Cliente "{cliente.nombre}" actualizado exitosamente', 'success')
+                return redirect(url_for('ver_cliente', id=id))
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error al actualizar el cliente: {str(e)}', 'error')
+                return redirect(url_for('editar_cliente', id=id))
+
+        return render_template('editar_cliente.html', cliente=cliente)
+
+    @app.route('/cliente/<int:id>')
+    def ver_cliente(id):
+        """Ver detalles de un cliente"""
+        cliente = obtener_cliente_o_404(id)
+        return render_template('ver_cliente.html', cliente=cliente)
+
+    @app.route('/cliente/<int:id>/eliminar', methods=['POST'])
+    def eliminar_cliente(id):
+        """Eliminar un cliente"""
+        cliente = obtener_cliente_o_404(id)
+
+        try:
+            nombre_cliente = cliente.nombre
+            db.session.delete(cliente)
+            db.session.commit()
+            flash(f'Cliente "{nombre_cliente}" eliminado exitosamente', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al eliminar el cliente: {str(e)}', 'error')
+
+        return redirect(url_for('clientes'))
+
     # ===== API REST (JSON) =====
 
     @app.route('/api/productos')
@@ -194,7 +315,7 @@ def create_app(config_name='development'):
     @app.shell_context_processor
     def make_shell_context():
         """Contexto para flask shell"""
-        return {'db': db, 'Producto': Producto}
+        return {'db': db, 'Producto': Producto, 'Cliente': Cliente}
 
     return app
 
