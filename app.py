@@ -28,25 +28,38 @@ def index():
     productos = Producto.query.paginate(page=page, per_page=10)
     return render_template('index.html', productos=productos)
 
+def obtener_producto_o_404(id):
+    """Obtener un producto por ID o devolver 404 si no existe"""
+    return Producto.query.get_or_404(id)
+
+
 @app.route('/producto/nuevo', methods=['GET', 'POST'])
 def nuevo_producto():
     """Crear un nuevo producto"""
     if request.method == 'POST':
         try:
-            nombre = request.form.get('nombre')
-            descripcion = request.form.get('descripcion')
+            nombre = request.form.get('nombre', '').strip()
+            descripcion = request.form.get('descripcion', '').strip()
             precio = float(request.form.get('precio'))
             cantidad = int(request.form.get('cantidad', 0))
-            categoria = request.form.get('categoria')
+            categoria = request.form.get('categoria', '').strip()
             
             # Validar datos
             if not nombre or precio < 0:
                 flash('Por favor completa los campos requeridos correctamente', 'error')
                 return redirect(url_for('nuevo_producto'))
+
+            if cantidad < 0:
+                flash('La cantidad no puede ser negativa', 'error')
+                return redirect(url_for('nuevo_producto'))
+
+            # Verificar si el producto ya existe (case-insensitive)
+            producto_existente = Producto.query.filter(
+                Producto.nombre.ilike(nombre)
+            ).first()
             
-            # Verificar si el producto ya existe
-            if Producto.query.filter_by(nombre=nombre).first():
-                flash('El producto ya existe', 'error')
+            if producto_existente:
+                flash(f'El producto "{nombre}" ya existe en el sistema', 'error')
                 return redirect(url_for('nuevo_producto'))
             
             producto = Producto(
@@ -77,15 +90,32 @@ def editar_producto(id):
     
     if request.method == 'POST':
         try:
-            producto.nombre = request.form.get('nombre')
-            producto.descripcion = request.form.get('descripcion')
-            producto.precio = float(request.form.get('precio'))
-            producto.cantidad = int(request.form.get('cantidad', 0))
-            producto.categoria = request.form.get('categoria')
+            nombre_nuevo = request.form.get('nombre', '').strip()
+            descripcion = request.form.get('descripcion', '').strip()
+            precio = float(request.form.get('precio'))
+            cantidad = int(request.form.get('cantidad', 0))
+            categoria = request.form.get('categoria', '').strip()
             
-            if not producto.nombre or producto.precio < 0:
+            if not nombre_nuevo or precio < 0:
                 flash('Por favor completa los campos requeridos correctamente', 'error')
                 return redirect(url_for('editar_producto', id=id))
+            
+            # Verificar si el nuevo nombre ya existe en otro producto (case-insensitive)
+            if nombre_nuevo.lower() != producto.nombre.lower():
+                producto_duplicado = Producto.query.filter(
+                    Producto.nombre.ilike(nombre_nuevo)
+                ).first()
+                
+                if producto_duplicado:
+                    flash(f'El nombre "{nombre_nuevo}" ya está siendo usado por otro producto', 'error')
+                    return redirect(url_for('editar_producto', id=id))
+            
+            # Actualizar datos
+            producto.nombre = nombre_nuevo
+            producto.descripcion = descripcion
+            producto.precio = precio
+            producto.cantidad = cantidad
+            producto.categoria = categoria
             
             db.session.commit()
             flash(f'Producto "{producto.nombre}" actualizado exitosamente', 'success')
