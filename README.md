@@ -1,4 +1,4 @@
-# 🛍️ Administrador de Productos
+# 🛍️ Administrador de Productos v1
 
 Una aplicación web moderna para gestionar productos, construida con Flask y SQLAlchemy.
 
