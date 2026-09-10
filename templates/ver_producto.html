@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ producto.nombre }} - Administrador{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h2 class="mb-0">{{ producto.nombre }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="text-muted">Información General</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>ID:</strong></td>
+                                <td>{{ producto.id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Categoría:</strong></td>
+                                <td>
+                                    {% if producto.categoria %}
+                                        <span class="badge bg-info">{{ producto.categoria }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado:</strong></td>
+                                <td>
+                                    {% if producto.activo %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-muted">Detalles de Precio y Stock</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Precio:</strong></td>
+                                <td class="text-success fs-5"><strong>${{ "%.2f"|format(producto.precio) }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cantidad en Stock:</strong></td>
+                                <td>
+                                    {% if producto.cantidad > 0 %}
+                                        <span class="badge bg-success fs-6">{{ producto.cantidad }} unidades</span>
+                                    {% else %}
+                                        <span class="badge bg-danger fs-6">Sin stock</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="text-muted">Descripción</h5>
+                    <p class="lead">
+                        {% if producto.descripcion %}
+                            {{ producto.descripcion }}
+                        {% else %}
+                            <span class="text-muted">Sin descripción</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="alert alert-secondary">
+                    <small>
+                        <strong>Timestamps:</strong><br>
+                        Creado: {{ producto.fecha_creacion.strftime('%d/%m/%Y %H:%M:%S') }}<br>
+                        Última actualización: {{ producto.fecha_actualizacion.strftime('%d/%m/%Y %H:%M:%S') }}
+                    </small>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('editar_producto', id=producto.id) }}" class="btn btn-warning btn-lg">
+                        ✏️ Editar
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">
+                        ← Volver
+                    </a>
+                    <form method="POST" action="{{ url_for('eliminar_producto', id=producto.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('¿Estás seguro de eliminar este producto?')">
+                            🗑️ Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

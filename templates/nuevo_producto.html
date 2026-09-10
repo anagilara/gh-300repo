@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Producto - Administrador{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>➕ Crear Nuevo Producto</h1>
+        
+        <form method="POST" class="mt-4" novalidate>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Producto *</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                <small class="form-text text-muted">Campo obligatorio</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="4" placeholder="Describe el producto..."></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="precio" class="form-label">Precio *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="precio" name="precio" step="0.01" min="0" required>
+                        </div>
+                        <small class="form-text text-muted">Campo obligatorio</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" min="0" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="categoria" class="form-label">Categoría</label>
+                <select class="form-select" id="categoria" name="categoria">
+                    <option value="">-- Seleccionar Categoría --</option>
+                    <option value="Electrónica">Electrónica</option>
+                    <option value="Ropa">Ropa</option>
+                    <option value="Alimentos">Alimentos</option>
+                    <option value="Libros">Libros</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    💾 Guardar Producto
+                </button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">
+                    ❌ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

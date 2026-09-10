@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Producto - Administrador{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>✏️ Editar Producto</h1>
+        
+        <form method="POST" class="mt-4" novalidate>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Producto *</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ producto.nombre }}" required>
+                <small class="form-text text-muted">Campo obligatorio</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="4">{{ producto.descripcion or '' }}</textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="precio" class="form-label">Precio *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="precio" name="precio" step="0.01" min="0" value="{{ producto.precio }}" required>
+                        </div>
+                        <small class="form-text text-muted">Campo obligatorio</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" min="0" value="{{ producto.cantidad }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="categoria" class="form-label">Categoría</label>
+                <select class="form-select" id="categoria" name="categoria">
+                    <option value="">-- Seleccionar Categoría --</option>
+                    <option value="Electrónica" {% if producto.categoria == 'Electrónica' %}selected{% endif %}>Electrónica</option>
+                    <option value="Ropa" {% if producto.categoria == 'Ropa' %}selected{% endif %}>Ropa</option>
+                    <option value="Alimentos" {% if producto.categoria == 'Alimentos' %}selected{% endif %}>Alimentos</option>
+                    <option value="Libros" {% if producto.categoria == 'Libros' %}selected{% endif %}>Libros</option>
+                    <option value="Otros" {% if producto.categoria == 'Otros' %}selected{% endif %}>Otros</option>
+                </select>
+            </div>
+
+            <div class="alert alert-info">
+                <small>
+                    <strong>Información:</strong><br>
+                    Creado: {{ producto.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}<br>
+                    Última actualización: {{ producto.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') }}
+                </small>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    💾 Guardar Cambios
+                </button>
+                <a href="{{ url_for('ver_producto', id=producto.id) }}" class="btn btn-secondary btn-lg">
+                    ❌ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
